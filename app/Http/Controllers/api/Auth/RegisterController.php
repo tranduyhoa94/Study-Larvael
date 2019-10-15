@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Tymon\JWTAuth\JWTAuth;
+use Illuminate\Http\Request;
 
 class RegisterController extends Controller
 {
@@ -28,16 +30,18 @@ class RegisterController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/home';
+    protected $redirectTo = '';
+
+    protected $auth;
 
     /**
      * Create a new controller instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(JWTAuth $auth)
     {
-        $this->middleware('guest');
+       $this->auth = $auth;
     }
 
     /**
@@ -51,7 +55,7 @@ class RegisterController extends Controller
         return Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => ['required', 'string', 'min:8'],
         ]);
     }
 
@@ -68,5 +72,26 @@ class RegisterController extends Controller
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
         ]);
+    }
+
+    public function register(Request $request)
+    {
+        $validator = $this->validator($request->all());
+        if (!$validator->fails()) {
+            $user = $this->create($request->all());
+
+            $token = $this->auth->attempt($request->only('email','password'));
+
+            return response()->json([
+                'success' => true,
+                'data'    => $user,
+                'token'   => $token
+            ],200);
+        }
+
+        return response()->json([
+                'success' => false,
+                'error'   => $validator->errors()
+            ]);
     }
 }
