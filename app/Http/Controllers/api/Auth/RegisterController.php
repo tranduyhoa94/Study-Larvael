@@ -76,6 +76,7 @@ class RegisterController extends Controller
 
     public function register(Request $request)
     {
+        dd(123);
         $validator = $this->validator($request->all());
         if (!$validator->fails()) {
             $user = $this->create($request->all());

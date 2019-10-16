@@ -10,7 +10,7 @@
 | contains the "web" middleware group. Now create something great!
 |
 */
-Route::group(['prefix' => '/auth', ['middleware' => 'throttle:20,5']], function () {
+Route::group(['prefix' => '/api/auth', ['middleware' => 'throttle:20,5']], function () {
 	Route::post('/register', 'api\Auth\RegisterController@register');
 	Route::post('/login', 'api\Auth\LoginController@login');
 });
